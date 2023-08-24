@@ -13,6 +13,7 @@ mvn compile exec:java \
 -Dexec.mainClass=dataflowsample.SamplePipeline \
 -Dexec.args="--runner=DataflowRunner \
 --project=$PROJECT_ID \
+--jobName=SamplePipelineFromMaven \
 --stagingLocation=gs://$BUCKET/staging \
 --gcpTempLocation=gs://$BUCKET/temp \
 --region=$REGION";
