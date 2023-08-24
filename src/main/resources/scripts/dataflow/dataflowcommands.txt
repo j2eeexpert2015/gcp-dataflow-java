@@ -1,0 +1,18 @@
+#Define variables for project id,bucket and region
+export PROJECT_ID="healthy-reason-396205";
+export BUCKET="dataflow-base-bucket";
+export REGION="us-east1";
+
+#printf "PROJECT_ID:%s ,BUCKET:%s,REGION:%s" $PROJECT_ID $BUCKET $REGION
+# Create the bucket
+gsutil mb -p $PROJECT_ID gs://$BUCKET
+
+mvn compile exec:java \
+-P dataflow \
+-Dexec.cleanupDaemonThreads=false \
+-Dexec.mainClass=dataflowsample.SamplePipeline \
+-Dexec.args="--runner=DataflowRunner \
+--project=$PROJECT_ID \
+--stagingLocation=gs://$BUCKET/staging \
+--gcpTempLocation=gs://$BUCKET/temp \
+--region=$REGION";
