@@ -17,3 +17,43 @@ mvn compile exec:java \
 --stagingLocation=gs://$BUCKET/staging \
 --gcpTempLocation=gs://$BUCKET/temp \
 --region=$REGION";
+
+mvn compile exec:java \
+-P dataflow \
+-Dexec.cleanupDaemonThreads=false \
+-Dexec.mainClass=dataflowsample.SamplePipeline \
+-Dexec.args="--runner=DataflowRunner \
+--project=$PROJECT_ID \
+--jobName=GenerateTemplate \
+--stagingLocation=gs://$BUCKET/staging \
+--gcpTempLocation=gs://$BUCKET/temp \
+--templateLocation=gs://$BUCKET/templates/dftemplate.json \
+--region=$REGION";
+
+gcloud dataflow jobs run template-run-dataflow --project=$PROJECT_ID --gcs-location gs://$BUCKET/templates/dftemplate.json --region $REGION --max-workers 1 --worker-machine-type n1-standard-1 --staging-location gs://$BUCKET/staging --disable-public-ips
+
+gcloud dataflow jobs run my-dataflow-job \
+    --gcs-location=gs://$BUCKET/jars/gcp-dataflow-java-bundled-1.0-SNAPSHOT.jar \
+    --region=$REGION \
+    --project=$PROJECT_ID \
+    --staging-location=gs://$BUCKET/staging ;
+gcloud dataflow jobs run my-dataflow-job \
+    --gcs-location=gs://$BUCKET/jars/gcp-dataflow-java-1.0-SNAPSHOT.jar \
+    --region=$REGION \
+    --project=$PROJECT_ID \
+    --staging-location=gs://$BUCKET/staging ;
+
+mvn compile exec:java \
+-P dataflow \
+-Dexec.cleanupDaemonThreads=false \
+-Dexec.mainClass=beamwordcount.WordCount \
+-Dexec.args="--runner=DataflowRunner \
+--project=healthy-reason-396205 \
+--inputFile=gs://dataflow-base-bucket/input/pom.xml \
+--outputFile=gs://dataflow-base-bucket/output \
+--stagingLocation=gs://dataflow-base-bucket/staging \
+--gcpTempLocation=gs://dataflow-base-bucket/temp \
+--templateLocation=gs://dataflow-base-bucket/templates/dftemplate.json \
+--region=us-east1"
+
+java -cp ./target/gcp-dataflow-java-bundled-1.0-SNAPSHOT.jar dataflowsample.SamplePipeline  --runner=DataflowRunner --project=$PROJECT_ID --jobName=GenerateTemplate --stagingLocation=gs://$BUCKET/staging --gcpTempLocation=gs://$BUCKET/temp --templateLocation=gs://$BUCKET/templates/dftemplate.json --region=$REGION
